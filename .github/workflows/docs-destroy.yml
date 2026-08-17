@@ -1,7 +1,8 @@
 name: Docs destroy
+# Disabled in this fork: tearing down docs previews requires upstream's hosting
+# credentials. Run manually via workflow_dispatch if that ever changes.
 on:
-  pull_request_target: # zizmor: ignore[dangerous-triggers] no attacker inputs are used here
-    types: [closed]
+  workflow_dispatch:
 
 permissions: {}
 

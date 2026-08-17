@@ -36,9 +36,9 @@ on:
         required: true
       FASTLANE_TEAM_ID:
         required: true
-  pull_request:
-  push:
-    branches: [main]
+  # PR/push triggers disabled in this fork: signing iOS/Android builds requires
+  # store certificates and signing secrets that are not configured here. The
+  # workflow_call trigger remains for release automation if ever needed.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
