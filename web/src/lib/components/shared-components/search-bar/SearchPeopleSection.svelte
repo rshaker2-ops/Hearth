@@ -32,7 +32,8 @@
   async function getPeople() {
     try {
       const res = await getAllPeople({ withHidden: false });
-      return orderBySelectedPeopleFirst(res.people);
+      // include named people shared by partners with face recognition sharing enabled
+      return orderBySelectedPeopleFirst([...res.people, ...(res.partnerPeople ?? [])]);
     } catch (error) {
       handleError(error, $t('errors.failed_to_get_people'));
     }
