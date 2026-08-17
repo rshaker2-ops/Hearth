@@ -29,7 +29,7 @@ class PartnerApiRepository extends ApiRepository {
   Future<void> delete(String id) => _api.removePartner(id);
 
   Future<UserDto> update(String id, {required bool inTimeline}) async {
-    final dto = await checkNull(_api.updatePartner(id, PartnerUpdateDto(inTimeline: inTimeline)));
+    final dto = await checkNull(_api.updatePartner(id, PartnerUpdateDto(inTimeline: Optional.present(inTimeline))));
     return UserConverter.fromPartnerDto(dto);
   }
 }

@@ -7,7 +7,8 @@
   import { fade } from 'svelte/transition';
 
   const disabled = $derived(featureFlagsManager.value.configFile);
-  let configToEdit = $state(systemConfigManager.cloneValue());
+  // partnerSharing is always present in server responses, but optional in the request type
+  let configToEdit = $state({ partnerSharing: { sharePeople: false }, ...systemConfigManager.cloneValue() });
 </script>
 
 <div class="mt-2">

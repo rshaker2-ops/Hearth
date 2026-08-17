@@ -2644,7 +2644,7 @@ export type SystemConfigDto = {
     nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
-    partnerSharing: SystemConfigPartnerSharingDto;
+    partnerSharing?: SystemConfigPartnerSharingDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;

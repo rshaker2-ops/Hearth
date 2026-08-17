@@ -421,7 +421,8 @@ export const SystemConfigSchema = z
     nightlyTasks: SystemConfigNightlyTasksSchema,
     oauth: SystemConfigOAuthSchema,
     passwordLogin: SystemConfigPasswordLoginSchema,
-    partnerSharing: SystemConfigPartnerSharingSchema,
+    // defaulted so config payloads from before this section existed remain valid
+    partnerSharing: SystemConfigPartnerSharingSchema.default({ sharePeople: false }),
     reverseGeocoding: SystemConfigReverseGeocodingSchema,
     metadata: SystemConfigMetadataSchema,
     storageTemplate: SystemConfigStorageTemplateSchema,

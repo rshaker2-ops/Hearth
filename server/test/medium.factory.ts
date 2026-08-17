@@ -142,6 +142,18 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
       if (options.mock.includes(dep)) {
         return newMockRepository(dep);
       }
+
+      // config repositories are always available via DI and are read by cross-cutting
+      // code paths (e.g. access checks), so default them to mocks resolving default config
+      if (dep === ConfigRepository) {
+        const configMock = newMockRepository(ConfigRepository) as unknown as Mocked<ConfigRepository>;
+        configMock.getEnv.mockReturnValue(mockEnvData({}));
+        return configMock;
+      }
+
+      if (dep === SystemMetadataRepository) {
+        return newMockRepository(SystemMetadataRepository);
+      }
     }) as unknown as ClassConstructorsToInstances<BaseServiceDeps>;
   }
 
