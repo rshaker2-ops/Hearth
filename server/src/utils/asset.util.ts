@@ -115,8 +115,15 @@ export type PartnerIdOptions = {
   repository: PartnerRepository;
   /** only include partners with `inTimeline: true` */
   timelineEnabled?: boolean;
+  /** only include partners with `sharePeople: true` */
+  sharePeopleEnabled?: boolean;
 };
-export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: PartnerIdOptions) => {
+export const getMyPartnerIds = async ({
+  userId,
+  repository,
+  timelineEnabled,
+  sharePeopleEnabled,
+}: PartnerIdOptions) => {
   const partnerIds = new Set<string>();
   const partners = await repository.getAll(userId);
   for (const partner of partners) {
@@ -134,10 +141,29 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
       continue;
     }
 
+    if (sharePeopleEnabled && !partner.sharePeople) {
+      continue;
+    }
+
     partnerIds.add(partner.sharedById);
   }
 
   return [...partnerIds];
+};
+
+/** Hide face recognition data on assets owned by other users, unless the owner shares people with the viewer */
+export const applySharedPeopleVisibility = (
+  assets: { ownerId: string; people?: { isHidden: boolean }[] }[],
+  viewerId: string,
+  sharedOwnerIds: Set<string>,
+) => {
+  for (const asset of assets) {
+    if (asset.ownerId === viewerId || !asset.people?.length) {
+      continue;
+    }
+
+    asset.people = sharedOwnerIds.has(asset.ownerId) ? asset.people.filter((person) => !person.isHidden) : [];
+  }
 };
 
 export type AssetHookRepositories = { asset: AssetRepository; event: EventRepository };

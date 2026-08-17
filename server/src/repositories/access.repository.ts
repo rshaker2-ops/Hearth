@@ -441,6 +441,28 @@ class PersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
+  async checkPartnerAccess(userId: string, personIds: Set<string>) {
+    if (personIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('person')
+      .select('person.id')
+      .innerJoin('partner', (join) =>
+        join
+          .onRef('partner.sharedById', '=', 'person.ownerId')
+          .on('partner.sharedWithId', '=', userId)
+          .on('partner.sharePeople', '=', true),
+      )
+      .where('person.id', 'in', [...personIds])
+      .where('person.isHidden', '=', false)
+      .execute()
+      .then((persons) => new Set(persons.map((person) => person.id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
   async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>) {
     if (assetFaceIds.size === 0) {
       return new Set<string>();

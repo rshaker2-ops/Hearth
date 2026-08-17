@@ -208,6 +208,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.update(auth, person.id, { birthDate: '1976-06-30' })).resolves.toEqual({
         id: person.id,
+        ownerId: person.ownerId,
         name: person.name,
         birthDate: '1976-06-30',
         thumbnailPath: person.thumbnailPath,
@@ -355,10 +356,10 @@ describe(PersonService.name, () => {
     it('should get the bounding boxes for an asset', async () => {
       const auth = AuthFactory.create();
       const face = AssetFaceFactory.create();
-      const asset = AssetFactory.from({ id: face.assetId }).exif().build();
+      const asset = AssetFactory.from({ id: face.assetId, ownerId: auth.user.id }).exif().build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.person.getFaces.mockResolvedValue([getForAssetFace(face)]);
-      mocks.asset.getForFaces.mockResolvedValue({ edits: [], ...asset.exifInfo });
+      mocks.asset.getForFaces.mockResolvedValue({ edits: [], ownerId: asset.ownerId, ...asset.exifInfo });
       await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([
         mapFaces(getForAssetFace(face), auth),
       ]);
@@ -508,6 +509,7 @@ describe(PersonService.name, () => {
         isHidden: person.isHidden,
         isFavorite: person.isFavorite,
         id: person.id,
+        ownerId: person.ownerId,
         name: person.name,
         thumbnailPath: person.thumbnailPath,
         updatedAt: expect.any(String),

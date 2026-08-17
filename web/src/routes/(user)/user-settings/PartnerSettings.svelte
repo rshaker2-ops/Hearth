@@ -1,6 +1,7 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -22,6 +23,7 @@
     sharedByMe: boolean;
     sharedWithMe: boolean;
     inTimeline: boolean;
+    sharePeople: boolean;
   }
 
   let partners: Array<PartnerSharing> = $state([]);
@@ -46,6 +48,7 @@
           sharedByMe: true,
           sharedWithMe: false,
           inTimeline: candidate.inTimeline ?? false,
+          sharePeople: candidate.sharePeople ?? false,
         },
       ];
     }
@@ -61,6 +64,7 @@
             sharedByMe: false,
             sharedWithMe: true,
             inTimeline: candidate.inTimeline ?? false,
+            sharePeople: false,
           },
         ];
       } else {
@@ -115,6 +119,16 @@
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
   };
+
+  const handleSharePeopleChanged = async (partner: PartnerSharing, sharePeople: boolean) => {
+    try {
+      await updatePartner({ id: partner.user.id, partnerUpdateDto: { sharePeople } });
+
+      partner.sharePeople = sharePeople;
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_face_sharing_status'));
+    }
+  };
 </script>
 
 <section class="my-4">
@@ -166,7 +180,24 @@
                 <Icon icon={mdiCheck} />
                 {$t('partner_can_access_location')}
               </li>
+              {#if partner.sharePeople}
+                <li class="flex place-items-center gap-2 py-1">
+                  <Icon icon={mdiCheck} />
+                  {$t('partner_can_access_people')}
+                </li>
+              {/if}
             </ul>
+
+            {#if featureFlagsManager.value.partnerSharePeople}
+              <div class="mt-4">
+                <SettingSwitch
+                  title={$t('partner_share_people')}
+                  subtitle={$t('partner_share_people_setting_description', { values: { partner: partner.user.name } })}
+                  bind:checked={partner.sharePeople}
+                  onToggle={(isChecked) => handleSharePeopleChanged(partner, isChecked)}
+                />
+              </div>
+            {/if}
           {/if}
 
           <!-- this user is sharing assets with me -->

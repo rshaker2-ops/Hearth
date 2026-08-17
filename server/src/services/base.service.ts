@@ -5,6 +5,8 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -61,6 +63,7 @@ import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { ClassConstructor } from 'src/types';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
+import { getMyPartnerIds } from 'src/utils/asset.util';
 import { getConfig, updateConfig } from 'src/utils/config';
 
 export const BASE_SERVICE_DEPENDENCIES = [
@@ -273,12 +276,34 @@ export class BaseService {
     return updateConfig(this.configRepos, newConfig);
   }
 
-  requireAccess(request: AccessRequest) {
-    return requireAccess(this.accessRepository, request);
+  async requireAccess(request: AccessRequest) {
+    return requireAccess(this.accessRepository, await this.resolveAccessRequest(request));
   }
 
-  checkAccess(request: AccessRequest) {
-    return checkAccess(this.accessRepository, request);
+  async checkAccess(request: AccessRequest) {
+    return checkAccess(this.accessRepository, await this.resolveAccessRequest(request));
+  }
+
+  // person reads may be granted through partner sharing, which is gated on a system config setting
+  private async resolveAccessRequest(request: AccessRequest): Promise<AccessRequest> {
+    if (request.permission === Permission.PersonRead && request.partnerSharePeople === undefined) {
+      const { partnerSharing } = await this.getConfig({ withCache: true });
+      return { ...request, partnerSharePeople: partnerSharing.sharePeople };
+    }
+
+    return request;
+  }
+
+  /** owners (other than the user) who share face recognition data with the user */
+  protected async getSharedPeopleOwnerIds(auth: AuthDto): Promise<Set<string>> {
+    const { partnerSharing } = await this.getConfig({ withCache: true });
+    if (!partnerSharing.sharePeople) {
+      return new Set();
+    }
+
+    return new Set(
+      await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository, sharePeopleEnabled: true }),
+    );
   }
 
   async isSetupAvailable(): Promise<boolean> {

@@ -12,6 +12,7 @@
   import NewVersionCheckSettings from './NewVersionCheckSettings.svelte';
   import NightlyTasksSettings from './NightlyTasksSettings.svelte';
   import NotificationSettings from './NotificationSettings.svelte';
+  import PartnerSharingSettings from './PartnerSharingSettings.svelte';
   import ServerSettings from './ServerSettings.svelte';
   import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
   import ThemeSettings from './ThemeSettings.svelte';
@@ -25,6 +26,7 @@
   import { getSystemConfigActions } from '$lib/services/system-config.service';
   import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
+    mdiAccountMultipleOutline,
     mdiAccountOutline,
     mdiBackupRestore,
     mdiBellOutline,
@@ -146,6 +148,13 @@
       subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
       icon: mdiBellOutline,
+    },
+    {
+      component: PartnerSharingSettings,
+      title: $t('admin.partner_sharing_settings'),
+      subtitle: $t('admin.partner_sharing_settings_description'),
+      key: 'partner-sharing',
+      icon: mdiAccountMultipleOutline,
     },
     {
       component: ServerSettings,

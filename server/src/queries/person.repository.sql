@@ -67,6 +67,37 @@ limit
 offset
   $6
 
+-- PersonRepository.getPartnerPeople
+select
+  "person".*
+from
+  "person"
+where
+  "person"."ownerId" in ($1)
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and exists (
+    select
+    from
+      "asset_face"
+    where
+      "asset_face"."personId" = "person"."id"
+      and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" = $4
+      and exists (
+        select
+        from
+          "asset"
+        where
+          "asset"."id" = "asset_face"."assetId"
+          and "asset"."visibility" = 'timeline'
+          and "asset"."deletedAt" is null
+      )
+  )
+order by
+  NULLIF(person.name, '') asc nulls last,
+  "person"."createdAt"
+
 -- PersonRepository.getAllWithoutFaces
 select
   "person".*

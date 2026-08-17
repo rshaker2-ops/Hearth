@@ -61,6 +61,7 @@ const PersonSearchSchema = z
 export const PersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Person ID'),
+    ownerId: z.uuidv4().optional().describe('User ID of the person owner'),
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
@@ -167,6 +168,10 @@ const PeopleResponseSchema = z
       .optional()
       .describe('Whether there are more pages')
       .meta(new HistoryBuilder().added('v1.110.0').stable('v2').getExtensions()),
+    partnerPeople: z
+      .array(PersonResponseSchema)
+      .optional()
+      .describe('Named people shared by partners with face recognition sharing enabled'),
   })
   .describe('People response');
 export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
@@ -174,6 +179,7 @@ export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
+    ownerId: person.ownerId,
     name: person.name,
     birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
@@ -212,9 +218,12 @@ export function mapFaces(
   auth: AuthDto,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
+  options?: { withPartnerPerson?: boolean },
 ): AssetFaceResponseDto {
+  const isOwner = face.person?.ownerId === auth.user.id;
+  const isSharedPartnerPerson = !!options?.withPartnerPerson && !!face.person && !face.person.isHidden;
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
+    person: face.person && (isOwner || isSharedPartnerPerson) ? mapPerson(face.person) : null,
   };
 }

@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
@@ -7,8 +8,10 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
+import { PartnerFactory } from 'test/factories/partner.factory';
+import { UserFactory } from 'test/factories/user.factory';
 import { authStub } from 'test/fixtures/auth.stub';
-import { getForAsset, getForAssetDeletion } from 'test/mappers';
+import { getForAsset, getForAssetDeletion, getForPartner } from 'test/mappers';
 import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -133,6 +136,41 @@ describe(AssetService.name, () => {
       await sut.get(authStub.admin, asset.id);
 
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([asset.id]));
+    });
+
+    it('should hide people on a partner asset when face sharing is not enabled', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from()
+        .face({}, (face) => face.person({ name: 'John Doe' }))
+        .build();
+
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      const result = (await sut.get(auth, asset.id)) as AssetResponseDto;
+
+      expect(result.people).toEqual([]);
+    });
+
+    it('should show people on a partner asset when the partner shares people', async () => {
+      const owner = UserFactory.create();
+      const viewer = UserFactory.create();
+      const auth = AuthFactory.create({ id: viewer.id });
+      const asset = AssetFactory.from({ ownerId: owner.id })
+        .face({}, (face) => face.person({ name: 'John Doe', ownerId: owner.id }))
+        .face({}, (face) => face.person({ name: 'Jane Doe', ownerId: owner.id, isHidden: true }))
+        .build();
+      const partner = PartnerFactory.from({ sharePeople: true }).sharedBy(owner).sharedWith(viewer).build();
+
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.systemMetadata.get.mockResolvedValue({ partnerSharing: { sharePeople: true } });
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
+
+      const result = (await sut.get(auth, asset.id)) as AssetResponseDto;
+
+      expect(result.people).toHaveLength(1);
+      expect(result.people?.[0]).toEqual(expect.objectContaining({ name: 'John Doe' }));
     });
 
     it('should throw an error for no access', async () => {

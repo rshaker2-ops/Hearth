@@ -22,10 +22,17 @@ export type AccessRequest = {
   auth: AuthDto;
   permission: Permission;
   ids: Set<string> | string[];
+  /** whether the partner face recognition sharing feature (system config `partnerSharing.sharePeople`) is enabled */
+  partnerSharePeople?: boolean;
 };
 
 type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
-type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
+type OtherAccessRequest = {
+  auth: AuthDto;
+  permission: Permission;
+  ids: Set<string>;
+  partnerSharePeople?: boolean;
+};
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
@@ -43,7 +50,7 @@ export const requireAccess = async (access: AccessRepository, request: AccessReq
 
 export const checkAccess = async (
   access: AccessRepository,
-  { ids, auth, permission }: AccessRequest,
+  { ids, auth, permission, partnerSharePeople }: AccessRequest,
 ): Promise<Set<string>> => {
   const idSet = Array.isArray(ids) ? new Set(ids) : ids;
   if (idSet.size === 0) {
@@ -52,7 +59,7 @@ export const checkAccess = async (
 
   return auth.sharedLink
     ? checkSharedLinkAccess(access, { sharedLink: auth.sharedLink, permission, ids: idSet })
-    : checkOtherAccess(access, { auth, permission, ids: idSet });
+    : checkOtherAccess(access, { auth, permission, ids: idSet, partnerSharePeople });
 };
 
 const checkSharedLinkAccess = async (
@@ -98,7 +105,7 @@ const checkSharedLinkAccess = async (
 };
 
 const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
-  const { auth, permission, ids } = request;
+  const { auth, permission, ids, partnerSharePeople } = request;
 
   switch (permission) {
     // uses album id
@@ -288,7 +295,15 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
-    case Permission.PersonRead:
+    case Permission.PersonRead: {
+      const isOwner = await access.person.checkOwnerAccess(auth.user.id, ids);
+      if (!partnerSharePeople) {
+        return isOwner;
+      }
+      const isPartner = await access.person.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
+      return setUnion(isOwner, isPartner);
+    }
+
     case Permission.PersonUpdate:
     case Permission.PersonDelete:
     case Permission.PersonMerge: {

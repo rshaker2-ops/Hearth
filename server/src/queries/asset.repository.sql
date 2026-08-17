@@ -662,6 +662,7 @@ where
 
 -- AssetRepository.getForFaces
 select
+  "asset"."ownerId",
   "asset_exif"."exifImageHeight",
   "asset_exif"."exifImageWidth",
   "asset_exif"."orientation",
