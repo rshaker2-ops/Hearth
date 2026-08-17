@@ -79,8 +79,10 @@ jobs:
       - name: Perform codegen
         run: mise //mobile:codegen
 
+      # analyze:dart only — the dcm half of //mobile:analyze needs a Dart Code
+      # Metrics license (DCM_CI_KEY/DCM_EMAIL secrets) not configured in this fork
       - name: Run analyze
-        run: mise //mobile:analyze
+        run: mise //mobile:analyze:dart
 
       - name: Run format
         run: mise //mobile:format
