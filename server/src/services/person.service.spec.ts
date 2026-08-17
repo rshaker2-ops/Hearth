@@ -106,13 +106,32 @@ describe(PersonService.name, () => {
 
     it('should get a person by id', async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create();
+      const person = PersonFactory.create({ ownerId: auth.user.id, birthDate: new Date('1990-01-01') });
 
       mocks.person.getById.mockResolvedValue(person);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      await expect(sut.getById(auth, person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
+      // the owner sees full person metadata, including birth date
+      await expect(sut.getById(auth, person.id)).resolves.toEqual(
+        expect.objectContaining({ id: person.id, birthDate: '1990-01-01' }),
+      );
       expect(mocks.person.getById).toHaveBeenCalledWith(person.id);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
+    });
+
+    it("should redact private metadata when reading another user's (partner-shared) person", async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ ownerId: newUuid(), birthDate: new Date('1990-01-01'), isFavorite: true });
+
+      mocks.person.getById.mockResolvedValue(person);
+      // partner reaches the person via PersonRead (partner branch), not ownership
+      mocks.access.person.checkPartnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.systemMetadata.get.mockResolvedValue({ partnerSharing: { sharePeople: true } });
+
+      const result = await sut.getById(auth, person.id);
+
+      expect(result).toEqual(expect.objectContaining({ id: person.id, name: person.name }));
+      expect(result.birthDate).toBeNull();
+      expect(result.isFavorite).toBeUndefined();
     });
   });
 
@@ -379,7 +398,7 @@ describe(PersonService.name, () => {
     it('should create a manual face and initialize the person feature photo creation', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const person = PersonFactory.create({ faceAssetId: null });
+      const person = PersonFactory.create({ faceAssetId: null, ownerId: auth.user.id });
       const featureFace = AssetFaceFactory.create({
         assetId: asset.id,
         personId: person.id,
@@ -428,7 +447,7 @@ describe(PersonService.name, () => {
     it('should not update the person feature photo if one already exists', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const person = PersonFactory.create({ faceAssetId: newUuid() });
+      const person = PersonFactory.create({ faceAssetId: newUuid(), ownerId: auth.user.id });
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
@@ -461,6 +480,33 @@ describe(PersonService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+
+      await expect(
+        sut.createFace(auth, {
+          assetId: asset.id,
+          personId: person.id,
+          imageHeight: 500,
+          imageWidth: 400,
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 110,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.person.createAssetFace).not.toHaveBeenCalled();
+    });
+
+    it('should reject attaching a person owned by another user (partner-shared person)', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create({ ownerId: auth.user.id });
+      // person belongs to the sharer; the partner reaches it only via PersonRead
+      const person = PersonFactory.create({ faceAssetId: null, ownerId: newUuid() });
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.access.person.checkPartnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.person.getById.mockResolvedValue(person);
 
       await expect(
         sut.createFace(auth, {

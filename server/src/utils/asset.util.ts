@@ -4,6 +4,7 @@ import { AssetFile } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { PersonResponseDto, redactPartnerPerson } from 'src/dtos/person.dto';
 import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -153,7 +154,7 @@ export const getMyPartnerIds = async ({
 
 /** Hide face recognition data on assets owned by other users, unless the owner shares people with the viewer */
 export const applySharedPeopleVisibility = (
-  assets: { ownerId: string; people?: { isHidden: boolean }[] }[],
+  assets: { ownerId: string; people?: PersonResponseDto[] }[],
   viewerId: string,
   sharedOwnerIds: Set<string>,
 ) => {
@@ -162,7 +163,9 @@ export const applySharedPeopleVisibility = (
       continue;
     }
 
-    asset.people = sharedOwnerIds.has(asset.ownerId) ? asset.people.filter((person) => !person.isHidden) : [];
+    asset.people = sharedOwnerIds.has(asset.ownerId)
+      ? asset.people.filter((person) => !person.isHidden).map((person) => redactPartnerPerson(person))
+      : [];
   }
 };
 

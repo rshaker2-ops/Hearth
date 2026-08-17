@@ -157,7 +157,9 @@ describe(AssetService.name, () => {
       const viewer = UserFactory.create();
       const auth = AuthFactory.create({ id: viewer.id });
       const asset = AssetFactory.from({ ownerId: owner.id })
-        .face({}, (face) => face.person({ name: 'John Doe', ownerId: owner.id }))
+        .face({}, (face) =>
+          face.person({ name: 'John Doe', ownerId: owner.id, birthDate: new Date('1990-01-01'), isFavorite: true }),
+        )
         .face({}, (face) => face.person({ name: 'Jane Doe', ownerId: owner.id, isHidden: true }))
         .build();
       const partner = PartnerFactory.from({ sharePeople: true }).sharedBy(owner).sharedWith(viewer).build();
@@ -171,6 +173,9 @@ describe(AssetService.name, () => {
 
       expect(result.people).toHaveLength(1);
       expect(result.people?.[0]).toEqual(expect.objectContaining({ name: 'John Doe' }));
+      // partner sees identity only — private person metadata is withheld
+      expect(result.people?.[0].birthDate).toBeNull();
+      expect(result.people?.[0].isFavorite).toBeUndefined();
     });
 
     it('should throw an error for no access', async () => {

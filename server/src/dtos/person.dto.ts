@@ -190,6 +190,13 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   };
 }
 
+// Partner face sharing exposes identity only (name + face thumbnail). The owner's
+// private person metadata — birth date, favorite flag, custom color — is withheld
+// so a partner never receives data outside the advertised "names of people" scope.
+export function redactPartnerPerson(person: PersonResponseDto): PersonResponseDto {
+  return { ...person, birthDate: null, isFavorite: undefined, color: undefined };
+}
+
 function mapFacesWithoutPerson(
   face: MaybeDehydrated<Selectable<AssetFaceTable>>,
   edits?: AssetEditActionItem[],
@@ -222,8 +229,12 @@ export function mapFaces(
 ): AssetFaceResponseDto {
   const isOwner = face.person?.ownerId === auth.user.id;
   const isSharedPartnerPerson = !!options?.withPartnerPerson && !!face.person && !face.person.isHidden;
+  let person = face.person && (isOwner || isSharedPartnerPerson) ? mapPerson(face.person) : null;
+  if (person && !isOwner) {
+    person = redactPartnerPerson(person);
+  }
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person && (isOwner || isSharedPartnerPerson) ? mapPerson(face.person) : null,
+    person,
   };
 }

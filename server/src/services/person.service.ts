@@ -20,6 +20,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  redactPartnerPerson,
 } from 'src/dtos/person.dto';
 import {
   AssetVisibility,
@@ -73,7 +74,7 @@ export class PersonService extends BaseService {
       const sharedOwnerIds = await this.getSharedPeopleOwnerIds(auth);
       if (sharedOwnerIds.size > 0) {
         const partnerItems = await this.personRepository.getPartnerPeople([...sharedOwnerIds]);
-        partnerPeople = partnerItems.map((person) => mapPerson(person));
+        partnerPeople = partnerItems.map((person) => redactPartnerPerson(mapPerson(person)));
       }
     }
 
@@ -168,7 +169,10 @@ export class PersonService extends BaseService {
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return mapPerson(await this.findOrFail(id));
+    const person = await this.findOrFail(id);
+    const dto = mapPerson(person);
+    // a partner may reach another user's person via PersonRead; withhold private metadata
+    return person.ownerId === auth.user.id ? dto : redactPartnerPerson(dto);
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
@@ -635,6 +639,12 @@ export class PersonService extends BaseService {
 
     if (!asset) {
       throw new NotFoundException('Asset not found');
+    }
+
+    // PersonRead may be granted through partner sharing; manual face tagging must stay
+    // owner-only, so the person and the asset must both belong to the caller.
+    if (person.ownerId !== auth.user.id) {
+      throw new BadRequestException('Cannot attach a face to a person you do not own');
     }
 
     const edits = asset.edits || [];
