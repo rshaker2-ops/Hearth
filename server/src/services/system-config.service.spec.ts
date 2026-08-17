@@ -179,6 +179,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
   passwordLogin: {
     enabled: true,
   },
+  partnerSharing: {
+    sharePeople: false,
+  },
   server: {
     externalDomain: '',
     loginPageMessage: '',

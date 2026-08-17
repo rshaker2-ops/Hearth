@@ -150,6 +150,7 @@ describe(ServerService.name, () => {
         trash: true,
         email: false,
         realtimeTranscoding: false,
+        partnerSharePeople: false,
       });
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });

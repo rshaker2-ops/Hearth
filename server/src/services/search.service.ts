@@ -21,7 +21,7 @@ import {
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { applySharedPeopleVisibility, getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -123,7 +123,7 @@ export class SearchService extends BaseService {
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
     });
-    return items.map((item) => mapAsset(item, { auth }));
+    return this.mapAssets(items, { auth });
   }
 
   async searchLargeAssets(auth: AuthDto, dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
@@ -137,7 +137,7 @@ export class SearchService extends BaseService {
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
     });
-    return items.map((item) => mapAsset(item, { auth }));
+    return this.mapAssets(items, { auth });
   }
 
   async searchSmart(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
@@ -242,16 +242,33 @@ export class SearchService extends BaseService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: MapAsset[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
+  private async mapResponse(
+    assets: MapAsset[],
+    nextPage: string | null,
+    options: AssetMapOptions,
+  ): Promise<SearchResponseDto> {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
         total: assets.length,
         count: assets.length,
-        items: assets.map((asset) => mapAsset(asset, options)),
+        items: await this.mapAssets(assets, options),
         facets: [],
         nextPage,
       },
     };
+  }
+
+  private async mapAssets(assets: MapAsset[], options: AssetMapOptions): Promise<AssetResponseDto[]> {
+    const items = assets.map((asset) => mapAsset(asset, options));
+
+    // hide face recognition data on partner assets, unless the partner shares people with the user
+    const auth = options.auth;
+    if (auth && !auth.sharedLink && items.some((item) => item.ownerId !== auth.user.id && item.people?.length)) {
+      const sharedOwnerIds = await this.getSharedPeopleOwnerIds(auth);
+      applySharedPeopleVisibility(items, auth.user.id, sharedOwnerIds);
+    }
+
+    return items;
   }
 }

@@ -69,6 +69,10 @@ export class TimelineService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
     }
 
+    if (dto.personId) {
+      await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] });
+    }
+
     if (auth.sharedLink && !auth.sharedLink.showExif) {
       dto.withCoordinates = false;
     }

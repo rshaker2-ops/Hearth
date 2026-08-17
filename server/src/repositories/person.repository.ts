@@ -211,6 +211,41 @@ export class PersonRepository {
     return paginationHelper(items, pagination.take);
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getPartnerPeople(ownerIds: string[]) {
+    if (ownerIds.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.db
+      .selectFrom('person')
+      .selectAll('person')
+      .where('person.ownerId', 'in', ownerIds)
+      .where('person.isHidden', '=', false)
+      .where('person.name', '!=', '')
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', '=', true)
+            .where((eb) =>
+              eb.exists((eb) =>
+                eb
+                  .selectFrom('asset')
+                  .whereRef('asset.id', '=', 'asset_face.assetId')
+                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+                  .where('asset.deletedAt', 'is', null),
+              ),
+            ),
+        ),
+      )
+      .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
+      .orderBy('person.createdAt')
+      .execute();
+  }
+
   @GenerateSql()
   getAllWithoutFaces() {
     return this.db

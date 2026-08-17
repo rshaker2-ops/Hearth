@@ -141,5 +141,51 @@ describe(PartnerService.name, () => {
         { inTimeline: true },
       );
     });
+
+    it('should reject updating inTimeline and sharePeople in the same request', async () => {
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create();
+
+      await expect(sut.update(auth, user2.id, { inTimeline: true, sharePeople: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.partner.update).not.toHaveBeenCalled();
+    });
+
+    it('should update sharePeople for a partner the user shares with', async () => {
+      const user1 = UserFactory.create();
+      const user2 = UserFactory.create();
+      const partner = PartnerFactory.from().sharedBy(user1).sharedWith(user2).build();
+      const auth = AuthFactory.create({ id: user1.id });
+
+      mocks.systemMetadata.get.mockResolvedValue({ partnerSharing: { sharePeople: true } });
+      mocks.partner.get.mockResolvedValue(getForPartner(partner));
+      mocks.partner.update.mockResolvedValue(getForPartner(partner));
+
+      await expect(sut.update(auth, user2.id, { sharePeople: true })).resolves.toBeDefined();
+      expect(mocks.partner.update).toHaveBeenCalledWith(
+        { sharedById: user1.id, sharedWithId: user2.id },
+        { sharePeople: true },
+      );
+    });
+
+    it('should reject a sharePeople update when the feature is disabled', async () => {
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create();
+
+      await expect(sut.update(auth, user2.id, { sharePeople: true })).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.partner.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject a sharePeople update when the partner does not exist', async () => {
+      const user2 = UserFactory.create();
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({ partnerSharing: { sharePeople: true } });
+      mocks.partner.get.mockResolvedValue(void 0);
+
+      await expect(sut.update(auth, user2.id, { sharePeople: true })).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.partner.update).not.toHaveBeenCalled();
+    });
   });
 });

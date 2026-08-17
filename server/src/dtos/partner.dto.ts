@@ -13,7 +13,11 @@ const PartnerCreateSchema = z
 
 const PartnerUpdateSchema = z
   .object({
-    inTimeline: z.boolean().describe('Show partner assets in timeline'),
+    inTimeline: z.boolean().optional().describe('Show partner assets in timeline'),
+    sharePeople: z.boolean().optional().describe('Share face recognition data with this partner'),
+  })
+  .refine((dto) => dto.inTimeline !== undefined || dto.sharePeople !== undefined, {
+    message: 'At least one of inTimeline or sharePeople is required',
   })
   .meta({ id: 'PartnerUpdateDto' });
 
@@ -25,6 +29,7 @@ const PartnerSearchSchema = z
 
 const PartnerResponseSchema = UserResponseSchema.extend({
   inTimeline: z.boolean().optional().describe('Show in timeline'),
+  sharePeople: z.boolean().optional().describe('Share face recognition data with this partner'),
 })
   .describe('Partner response')
   .meta({ id: 'PartnerResponseDto' });

@@ -1213,7 +1213,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
-      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(['asset.ownerId', 'asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
       .select(withEdits)
       .where('asset.id', '=', id)
       .executeTakeFirstOrThrow();

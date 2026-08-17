@@ -36,6 +36,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import {
+  applySharedPeopleVisibility,
   getAssetFiles,
   getDimensions,
   isPanorama,
@@ -85,8 +86,11 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (auth.sharedLink) {
       data.people = [];
+    } else if (data.ownerId !== auth.user.id) {
+      const sharedOwnerIds = await this.getSharedPeopleOwnerIds(auth);
+      applySharedPeopleVisibility([data], auth.user.id, sharedOwnerIds);
     }
 
     return data;

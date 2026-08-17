@@ -20834,6 +20834,10 @@
           "profileImagePath": {
             "description": "Profile image path",
             "type": "string"
+          },
+          "sharePeople": {
+            "description": "Share face recognition data with this partner",
+            "type": "boolean"
           }
         },
         "required": [
@@ -20851,11 +20855,12 @@
           "inTimeline": {
             "description": "Show partner assets in timeline",
             "type": "boolean"
+          },
+          "sharePeople": {
+            "description": "Share face recognition data with this partner",
+            "type": "boolean"
           }
         },
-        "required": [
-          "inTimeline"
-        ],
         "type": "object"
       },
       "PeopleResponse": {
@@ -20904,6 +20909,13 @@
             "maximum": 9007199254740991,
             "minimum": 0,
             "type": "integer"
+          },
+          "partnerPeople": {
+            "description": "Named people shared by partners with face recognition sharing enabled",
+            "items": {
+              "$ref": "#/components/schemas/PersonResponseDto"
+            },
+            "type": "array"
           },
           "people": {
             "items": {
@@ -21244,6 +21256,12 @@
           },
           "name": {
             "description": "Person name",
+            "type": "string"
+          },
+          "ownerId": {
+            "description": "User ID of the person owner",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "thumbnailPath": {
@@ -22692,6 +22710,10 @@
             "description": "Whether OCR is enabled",
             "type": "boolean"
           },
+          "partnerSharePeople": {
+            "description": "Whether sharing face recognition data with partners is enabled",
+            "type": "boolean"
+          },
           "passwordLogin": {
             "description": "Whether password login is enabled",
             "type": "boolean"
@@ -22731,6 +22753,7 @@
           "oauth",
           "oauthAutoLaunch",
           "ocr",
+          "partnerSharePeople",
           "passwordLogin",
           "realtimeTranscoding",
           "reverseGeocoding",
@@ -25738,6 +25761,9 @@
           "oauth": {
             "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
+          "partnerSharing": {
+            "$ref": "#/components/schemas/SystemConfigPartnerSharingDto"
+          },
           "passwordLogin": {
             "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
@@ -26494,6 +26520,18 @@
           "storageQuotaClaim",
           "timeout",
           "tokenEndpointAuthMethod"
+        ],
+        "type": "object"
+      },
+      "SystemConfigPartnerSharingDto": {
+        "properties": {
+          "sharePeople": {
+            "description": "Allow users to share face recognition data with partners",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sharePeople"
         ],
         "type": "object"
       },

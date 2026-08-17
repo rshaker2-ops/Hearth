@@ -196,6 +196,18 @@ where
   "person"."id" in ($1)
   and "person"."ownerId" = $2
 
+-- AccessRepository.person.checkPartnerAccess
+select
+  "person"."id"
+from
+  "person"
+  inner join "partner" on "partner"."sharedById" = "person"."ownerId"
+  and "partner"."sharedWithId" = $1
+  and "partner"."sharePeople" = $2
+where
+  "person"."id" in ($3)
+  and "person"."isHidden" = $4
+
 -- AccessRepository.person.checkFaceOwnerAccess
 select
   "asset_face"."id"

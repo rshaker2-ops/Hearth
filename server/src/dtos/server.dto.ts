@@ -146,6 +146,7 @@ const ServerFeaturesSchema = z
     email: z.boolean().describe('Whether email notifications are enabled'),
     ocr: z.boolean().describe('Whether OCR is enabled'),
     realtimeTranscoding: z.boolean().describe('Whether real-time transcoding is enabled'),
+    partnerSharePeople: z.boolean().describe('Whether sharing face recognition data with partners is enabled'),
   })
   .meta({ id: 'ServerFeaturesDto' });
 

@@ -283,6 +283,10 @@ const SystemConfigPasswordLoginSchema = z
   .object({ enabled: configBool.describe('Enabled') })
   .meta({ id: 'SystemConfigPasswordLoginDto' });
 
+const SystemConfigPartnerSharingSchema = z
+  .object({ sharePeople: configBool.describe('Allow users to share face recognition data with partners') })
+  .meta({ id: 'SystemConfigPartnerSharingDto' });
+
 const SystemConfigReverseGeocodingSchema = z
   .object({ enabled: configBool.describe('Enabled') })
   .meta({ id: 'SystemConfigReverseGeocodingDto' });
@@ -417,6 +421,8 @@ export const SystemConfigSchema = z
     nightlyTasks: SystemConfigNightlyTasksSchema,
     oauth: SystemConfigOAuthSchema,
     passwordLogin: SystemConfigPasswordLoginSchema,
+    // defaulted so config payloads from before this section existed remain valid
+    partnerSharing: SystemConfigPartnerSharingSchema.default({ sharePeople: false }),
     reverseGeocoding: SystemConfigReverseGeocodingSchema,
     metadata: SystemConfigMetadataSchema,
     storageTemplate: SystemConfigStorageTemplateSchema,

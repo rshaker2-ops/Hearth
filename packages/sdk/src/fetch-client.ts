@@ -843,6 +843,8 @@ export type PersonResponseDto = {
     isHidden: boolean;
     /** Person name */
     name: string;
+    /** User ID of the person owner */
+    ownerId?: string;
     /** Thumbnail path */
     thumbnailPath: string;
     /** Last update date */
@@ -1440,6 +1442,8 @@ export type PartnerResponseDto = {
     profileChangedAt: string;
     /** Profile image path */
     profileImagePath: string;
+    /** Share face recognition data with this partner */
+    sharePeople?: boolean;
 };
 export type PartnerCreateDto = {
     /** User ID to share with */
@@ -1447,13 +1451,17 @@ export type PartnerCreateDto = {
 };
 export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
-    inTimeline: boolean;
+    inTimeline?: boolean;
+    /** Share face recognition data with this partner */
+    sharePeople?: boolean;
 };
 export type PeopleResponseDto = {
     /** Whether there are more pages */
     hasNextPage?: boolean;
     /** Number of hidden people */
     hidden: number;
+    /** Named people shared by partners with face recognition sharing enabled */
+    partnerPeople?: PersonResponseDto[];
     people: PersonResponseDto[];
     /** Total number of people */
     total: number;
@@ -2037,6 +2045,8 @@ export type ServerFeaturesDto = {
     oauthAutoLaunch: boolean;
     /** Whether OCR is enabled */
     ocr: boolean;
+    /** Whether sharing face recognition data with partners is enabled */
+    partnerSharePeople: boolean;
     /** Whether password login is enabled */
     passwordLogin: boolean;
     /** Whether real-time transcoding is enabled */
@@ -2566,6 +2576,10 @@ export type SystemConfigOAuthDto = {
     timeout: number;
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
 };
+export type SystemConfigPartnerSharingDto = {
+    /** Allow users to share face recognition data with partners */
+    sharePeople: boolean;
+};
 export type SystemConfigPasswordLoginDto = {
     /** Enabled */
     enabled: boolean;
@@ -2630,6 +2644,7 @@ export type SystemConfigDto = {
     nightlyTasks: SystemConfigNightlyTasksDto;
     notifications: SystemConfigNotificationsDto;
     oauth: SystemConfigOAuthDto;
+    partnerSharing?: SystemConfigPartnerSharingDto;
     passwordLogin: SystemConfigPasswordLoginDto;
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;

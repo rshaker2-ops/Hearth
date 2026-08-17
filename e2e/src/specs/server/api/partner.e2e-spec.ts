@@ -1,4 +1,4 @@
-import { LoginResponseDto, createPartner } from '@immich/sdk';
+import { LoginResponseDto, createPartner, updateConfig } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
@@ -78,6 +78,62 @@ describe('/partners', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: false }));
+    });
+
+    it('should reject a sharePeople update when the feature is disabled', async () => {
+      const { status, body } = await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharePeople: true });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'Sharing face recognition data with partners is disabled' }),
+      );
+    });
+
+    it('should update sharePeople when the feature is enabled', async () => {
+      const config = await utils.getSystemConfig(admin.accessToken);
+      await updateConfig(
+        { systemConfigDto: { ...config, partnerSharing: { sharePeople: true } } },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      try {
+        const { status, body } = await request(app)
+          .put(`/partners/${user2.userId}`)
+          .set('Authorization', `Bearer ${user1.accessToken}`)
+          .send({ sharePeople: true });
+
+        expect(status).toBe(200);
+        expect(body).toEqual(expect.objectContaining({ id: user2.userId, sharePeople: true }));
+      } finally {
+        await updateConfig(
+          { systemConfigDto: { ...config, partnerSharing: { sharePeople: false } } },
+          { headers: asBearerAuth(admin.accessToken) },
+        );
+      }
+    });
+
+    it('should reject an update of both inTimeline and sharePeople', async () => {
+      const { status, body } = await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ inTimeline: true, sharePeople: false });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        expect.objectContaining({ message: 'inTimeline and sharePeople cannot be updated in the same request' }),
+      );
+    });
+
+    it('should reject an empty update', async () => {
+      const { status } = await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({});
+
+      expect(status).toBe(400);
     });
   });
 

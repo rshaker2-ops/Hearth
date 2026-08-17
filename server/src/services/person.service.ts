@@ -68,11 +68,21 @@ export class PersonService extends BaseService {
     });
     const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
 
+    let partnerPeople: PersonResponseDto[] | undefined;
+    if (page === 1) {
+      const sharedOwnerIds = await this.getSharedPeopleOwnerIds(auth);
+      if (sharedOwnerIds.size > 0) {
+        const partnerItems = await this.personRepository.getPartnerPeople([...sharedOwnerIds]);
+        partnerPeople = partnerItems.map((person) => mapPerson(person));
+      }
+    }
+
     return {
       people: items.map((person) => mapPerson(person)),
       hasNextPage,
       total,
       hidden,
+      partnerPeople,
     };
   }
 
@@ -128,7 +138,14 @@ export class PersonService extends BaseService {
     const asset = await this.assetRepository.getForFaces(dto.id);
     const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
+    const isOwner = asset.ownerId === auth.user.id;
+    let withPartnerPerson = false;
+    if (!isOwner && !auth.sharedLink) {
+      const sharedOwnerIds = await this.getSharedPeopleOwnerIds(auth);
+      withPartnerPerson = sharedOwnerIds.has(asset.ownerId);
+    }
+
+    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions, { withPartnerPerson }));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {

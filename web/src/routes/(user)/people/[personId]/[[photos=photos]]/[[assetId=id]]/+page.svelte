@@ -66,8 +66,15 @@
   let person = $derived(data.person);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
+  // people shared by a partner are read-only; their assets live in the partner's timeline
+  const isOwnPerson = $derived(!person.ownerId || person.ownerId === authManager.user.id);
+
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
+  const options = $derived({
+    visibility: AssetVisibility.Timeline,
+    personId: data.person.id,
+    ...(!isOwnPerson && { userId: person.ownerId }),
+  });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -380,8 +387,8 @@
                 <button
                   type="button"
                   class="flex items-center justify-center"
-                  title={$t('edit_name')}
-                  onclick={() => (isEditingName = true)}
+                  title={isOwnPerson ? $t('edit_name') : person.name}
+                  onclick={() => (isEditingName = isOwnPerson)}
                 >
                   <ImageThumbnail
                     circle
@@ -501,10 +508,12 @@
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
-          <ContextMenuButton
-            items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
-            aria-label={$t('open')}
-          />
+          {#if isOwnPerson}
+            <ContextMenuButton
+              items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
+              aria-label={$t('open')}
+            />
+          {/if}
         {/snippet}
       </ControlAppBar>
     {/if}

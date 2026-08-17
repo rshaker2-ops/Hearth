@@ -5,6 +5,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import PeopleCard from './PeopleCard.svelte';
   import PeopleInfiniteScroll from './PeopleInfiniteScroll.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -14,7 +15,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { handlePromiseError } from '$lib/utils';
+  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
@@ -214,6 +215,7 @@
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
+  let partnerPeople = $derived(data.people.partnerPeople ?? []);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     editingPerson = person;
@@ -371,6 +373,33 @@
         <p class="mt-5 line-clamp-2 max-w-lg overflow-hidden text-3xl font-medium">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
+      </div>
+    </div>
+  {/if}
+
+  {#if partnerPeople.length > 0 && !searchName}
+    <div class="mt-8">
+      <p class="mb-4 font-medium text-immich-fg dark:text-immich-dark-fg">{$t('people_shared_by_partners')}</p>
+      <div class="grid w-full grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-10">
+        {#each partnerPeople as person (person.id)}
+          <div
+            class="rounded-xl border-2 border-transparent p-2 transition-all hover:border-immich-primary/50 hover:bg-gray-200 hover:shadow-sm hover:dark:border-immich-dark-primary/25 dark:hover:bg-immich-dark-primary/20"
+          >
+            <a href={Route.viewPerson(person, { previousRoute: Route.people() })} draggable="false">
+              <div class="size-full rounded-xl brightness-95 filter">
+                <ImageThumbnail
+                  curve
+                  shadow
+                  url={getPeopleThumbnailUrl(person)}
+                  altText={person.name}
+                  title={person.name}
+                  widthStyle="100%"
+                />
+              </div>
+              <p class="mt-2 truncate text-center text-sm font-medium" title={person.name}>{person.name}</p>
+            </a>
+          </div>
+        {/each}
       </div>
     </div>
   {/if}

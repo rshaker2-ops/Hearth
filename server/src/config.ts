@@ -144,6 +144,9 @@ export type SystemConfig = {
   passwordLogin: {
     enabled: boolean;
   };
+  partnerSharing: {
+    sharePeople: boolean;
+  };
   storageTemplate: {
     enabled: boolean;
     hashVerificationEnabled: boolean;
@@ -360,6 +363,9 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   passwordLogin: {
     enabled: true,
+  },
+  partnerSharing: {
+    sharePeople: false,
   },
   storageTemplate: {
     enabled: false,
