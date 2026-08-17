@@ -152,7 +152,9 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
       }
 
       if (dep === SystemMetadataRepository) {
-        return newMockRepository(SystemMetadataRepository);
+        const metadataMock = newMockRepository(SystemMetadataRepository) as unknown as Mocked<SystemMetadataRepository>;
+        metadataMock.get.mockResolvedValue(null);
+        return metadataMock;
       }
     }) as unknown as ClassConstructorsToInstances<BaseServiceDeps>;
   }
