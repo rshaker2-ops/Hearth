@@ -1,0 +1,55 @@
+name: Release Improved Immich
+
+# Fork release flow: bump `improvedVersion` in server/src/constants.ts, merge to
+# main, then dispatch this workflow. It tags main as v<version> and publishes a
+# GitHub Release, which triggers docker.yml (release: published) to build and
+# push ghcr.io images tagged v<version> and v<major>.
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions: {} # No job-level permissions are needed because it uses the app-token
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: main
+
+      - name: Read fork version
+        id: version
+        run: |
+          version=$(sed -n "s/^export const improvedVersion = '\(.*\)';$/\1/p" server/src/constants.ts)
+          if [[ -z "${version}" ]]; then
+            echo "Could not read improvedVersion from server/src/constants.ts" >&2
+            exit 1
+          fi
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
+            echo "Release ${TAG} already exists; bump improvedVersion in server/src/constants.ts first" >&2
+            exit 1
+          fi
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --target main \
+            --title "Improved Immich ${TAG}" \
+            --generate-notes
