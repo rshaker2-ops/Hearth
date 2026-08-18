@@ -77,7 +77,9 @@
         onclick={() => info && modalManager.show(ServerAboutModal, { versions, info })}
         class="flex place-content-center place-items-center gap-1 dark:text-immich-gray"
       >
-        {#if isMain}
+        {#if info?.improvedVersion}
+          v{info.improvedVersion}
+        {:else if isMain}
           <Icon icon={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}
           {version}

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { serverVersion } from 'src/constants';
+import { improvedVersion, serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
@@ -48,6 +48,7 @@ export class ServerService extends BaseService {
     return {
       version,
       versionUrl: `https://github.com/immich-app/immich/releases/tag/${version}`,
+      improvedVersion,
       licensed: !!licensed,
       ...buildMetadata,
       ...buildVersions,

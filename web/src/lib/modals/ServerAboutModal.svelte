@@ -22,6 +22,14 @@
         <Alert color="warning" title={$t('main_branch_warning')} class="col-span-full" size="small" />
       {/if}
 
+      {#if info.improvedVersion}
+        <ServerAboutItem
+          id="improved-immich"
+          title="Improved Immich"
+          version="v{info.improvedVersion}"
+          versionHref={info.repositoryUrl}
+        />
+      {/if}
       <ServerAboutItem id="immich" title="Immich" version={info.version} versionHref={info.versionUrl} />
       <ServerAboutItem id="exif" title="ExifTool" version={info.exiftool} />
       <ServerAboutItem id="nodejs" title="Node.js" version={info.nodejs} />

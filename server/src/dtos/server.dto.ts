@@ -14,6 +14,7 @@ const ServerAboutResponseSchema = z
   .object({
     version: z.string().describe('Server version'),
     versionUrl: z.string().describe('URL to version information'),
+    improvedVersion: z.string().optional().describe('Improved Immich fork version'),
     repository: z.string().optional().describe('Repository name'),
     repositoryUrl: z.string().optional().describe('Repository URL'),
     sourceRef: z.string().optional().describe('Source reference (branch/tag)'),
