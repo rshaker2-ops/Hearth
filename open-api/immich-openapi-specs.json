@@ -22508,6 +22508,10 @@
             "description": "ImageMagick version",
             "type": "string"
           },
+          "improvedVersion": {
+            "description": "Improved Immich fork version",
+            "type": "string"
+          },
           "libvips": {
             "description": "libvips version",
             "type": "string"

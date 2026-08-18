@@ -185,6 +185,10 @@
                   <Icon icon={mdiCheck} />
                   {$t('partner_can_access_people')}
                 </li>
+                <li class="flex place-items-center gap-2 py-1">
+                  <Icon icon={mdiCheck} />
+                  {$t('partner_can_access_person_birthdays')}
+                </li>
               {/if}
             </ul>
 

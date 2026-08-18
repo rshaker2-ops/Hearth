@@ -1961,6 +1961,8 @@ export type ServerAboutResponseDto = {
     ffmpeg?: string;
     /** ImageMagick version */
     imagemagick?: string;
+    /** Improved Immich fork version */
+    improvedVersion?: string;
     /** libvips version */
     libvips?: string;
     /** Whether the server is licensed */

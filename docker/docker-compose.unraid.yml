@@ -9,7 +9,7 @@
 # Images are published from this fork's main branch by CI:
 #   ghcr.io/rshaker2-ops/immich-server:main
 #   ghcr.io/rshaker2-ops/immich-machine-learning:main
-# Pin IMMICH_VERSION in .env to a commit tag (e.g. commit-<sha>) for reproducible upgrades.
+# Pin IMMICH_VERSION in .env to a release tag (e.g. v1.0.0) for reproducible upgrades.
 
 name: immich
 

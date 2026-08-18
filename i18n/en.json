@@ -1591,6 +1591,7 @@
   "partner_can_access_assets": "All your photos and videos except those in Archived and Deleted",
   "partner_can_access_location": "The location where your photos were taken",
   "partner_can_access_people": "The people tagged in your photos",
+  "partner_can_access_person_birthdays": "The names and birthdays of the people tagged in your photos",
   "partner_list_user_photos": "{user}'s photos",
   "partner_page_empty_message": "Your photos are not yet shared with any partner.",
   "partner_page_no_more_users": "No more users to add",
