@@ -105,14 +105,14 @@ ARG BUILD_SOURCE_REF
 ARG BUILD_SOURCE_COMMIT
 
 ENV IMMICH_BUILD=${BUILD_ID}
-ENV IMMICH_BUILD_URL=https://github.com/rshaker2-ops/improved-immich/actions/runs/${BUILD_ID}
+ENV IMMICH_BUILD_URL=https://github.com/rshaker2-ops/hearth/actions/runs/${BUILD_ID}
 ENV IMMICH_BUILD_IMAGE=${BUILD_IMAGE}
-ENV IMMICH_BUILD_IMAGE_URL=https://github.com/rshaker2-ops/improved-immich/pkgs/container/immich-server
-ENV IMMICH_REPOSITORY=rshaker2-ops/improved-immich
-ENV IMMICH_REPOSITORY_URL=https://github.com/rshaker2-ops/improved-immich
+ENV IMMICH_BUILD_IMAGE_URL=https://github.com/rshaker2-ops/hearth/pkgs/container/hearth-server
+ENV IMMICH_REPOSITORY=rshaker2-ops/hearth
+ENV IMMICH_REPOSITORY_URL=https://github.com/rshaker2-ops/hearth
 ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
-ENV IMMICH_SOURCE_URL=https://github.com/rshaker2-ops/improved-immich/commit/${BUILD_SOURCE_COMMIT}
+ENV IMMICH_SOURCE_URL=https://github.com/rshaker2-ops/hearth/commit/${BUILD_SOURCE_COMMIT}
 
 VOLUME /data
 EXPOSE 2283

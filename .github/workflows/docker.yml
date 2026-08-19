@@ -61,21 +61,21 @@ jobs:
     strategy:
       matrix:
         include: &ml-variants
-          - image: immich-machine-learning
+          - image: hearth-machine-learning
             device: cpu
-          - image: immich-machine-learning
+          - image: hearth-machine-learning
             device: cuda
             suffixes: '-cuda'
             platforms: linux/amd64
-          - image: immich-machine-learning
+          - image: hearth-machine-learning
             device: openvino
             suffixes: '-openvino'
             platforms: linux/amd64
-          - image: immich-machine-learning
+          - image: hearth-machine-learning
             device: armnn
             suffixes: '-armnn'
             platforms: linux/arm64
-          - image: immich-machine-learning
+          - image: hearth-machine-learning
             device: rknn
             suffixes: '-rknn'
             platforms: linux/arm64
@@ -119,7 +119,7 @@ jobs:
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
-          REPOSITORY: ${{ github.repository_owner }}/immich-server
+          REPOSITORY: ${{ github.repository_owner }}/hearth-server
           TAG_OLD: main
           TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}
           TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}
@@ -168,7 +168,7 @@ jobs:
       actions: read
       packages: write
     with:
-      image: immich-server
+      image: hearth-server
       context: .
       dockerfile: server/Dockerfile
       tags: *tag-rules
@@ -187,7 +187,7 @@ jobs:
       fail-fast: false
       matrix:
         # Slightly hacky; we reuse the ml matrix but tack on immich-server too
-        image: [immich-server]
+        image: [hearth-server]
         include: *ml-variants
     env:
       IMAGE: ${{ matrix.image }}

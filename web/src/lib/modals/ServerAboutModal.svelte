@@ -24,8 +24,8 @@
 
       {#if info.improvedVersion}
         <ServerAboutItem
-          id="improved-immich"
-          title="Improved Immich"
+          id="hearth"
+          title="Hearth"
           version="v{info.improvedVersion}"
           versionHref={info.repositoryUrl}
         />
@@ -77,6 +77,22 @@
           versionHref={info.buildImageUrl}
         />
       {/if}
+
+      <p class="col-span-full text-xs immich-form-label">
+        {$t('about_attribution')}
+        <a href="https://github.com/immich-app/immich" class="underline" target="_blank" rel="noopener noreferrer">
+          Immich
+        </a>
+        ·
+        <a
+          href="https://www.gnu.org/licenses/agpl-3.0.html"
+          class="underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          AGPL-3.0
+        </a>
+      </p>
 
       <div class="col-span-full">
         <Label size="small" color="primary" for="version-history">{$t('version_history')}</Label>

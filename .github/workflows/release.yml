@@ -1,4 +1,4 @@
-name: Release Improved Immich
+name: Release Hearth
 
 # Fork release flow: bump `improvedVersion` in server/src/constants.ts, merge to
 # main, then dispatch this workflow. It tags main as v<version>, publishes a
@@ -51,7 +51,7 @@ jobs:
           gh release create "${TAG}" \
             --repo "${REPO}" \
             --target main \
-            --title "Improved Immich ${TAG}" \
+            --title "Hearth ${TAG}" \
             --generate-notes
 
       - name: Build release images

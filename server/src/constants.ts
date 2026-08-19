@@ -55,8 +55,8 @@ const packageFile = join(basePath, '..', 'package.json');
 const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
 
-// version of the Improved Immich fork, independent of the upstream Immich version above
-export const improvedVersion = '1.0.0';
+// version of the Hearth fork, independent of the upstream Immich version above
+export const improvedVersion = '1.1.0';
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;

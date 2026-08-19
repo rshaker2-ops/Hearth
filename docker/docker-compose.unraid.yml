@@ -1,5 +1,5 @@
 #
-# Compose stack for running THIS FORK (rshaker2-ops/improved-immich) on an Unraid server.
+# Compose stack for running Hearth (rshaker2-ops/hearth) on an Unraid server.
 #
 # Usage (with the "Docker Compose Manager" plugin from Community Applications):
 #   1. Create a new stack and paste this file as its compose file.
@@ -7,16 +7,16 @@
 #   3. Compose Up. The web UI is served on port 2283.
 #
 # Images are published from this fork's main branch by CI:
-#   ghcr.io/rshaker2-ops/immich-server:main
-#   ghcr.io/rshaker2-ops/immich-machine-learning:main
-# Pin IMMICH_VERSION in .env to a release tag (e.g. v1.0.0) for reproducible upgrades.
+#   ghcr.io/rshaker2-ops/hearth-server:main
+#   ghcr.io/rshaker2-ops/hearth-machine-learning:main
+# Pin IMMICH_VERSION in .env to a release tag (e.g. v1.1.0) for reproducible upgrades.
 
 name: immich
 
 services:
   immich-server:
     container_name: immich_server
-    image: ghcr.io/rshaker2-ops/immich-server:${IMMICH_VERSION:-main}
+    image: ghcr.io/rshaker2-ops/hearth-server:${IMMICH_VERSION:-main}
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding (quicksync for Intel iGPU)
@@ -39,7 +39,7 @@ services:
     container_name: immich_machine_learning
     # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-main}-cuda
-    image: ghcr.io/rshaker2-ops/immich-machine-learning:${IMMICH_VERSION:-main}
+    image: ghcr.io/rshaker2-ops/hearth-machine-learning:${IMMICH_VERSION:-main}
     # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference

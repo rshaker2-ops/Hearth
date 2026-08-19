@@ -29,7 +29,8 @@ export const ImmichFooter = () => (
     </Row>
 
     <Text className="text-center text-sm text-immich-footer">
-      <Link href="https://immich.app">Immich</Link> project is available under GNU AGPL v3 license.
+      Hearth is a modified version of the <Link href="https://github.com/immich-app/immich">Immich</Link> project,
+      available under the GNU AGPL v3 license.
     </Text>
   </>
 );

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 160">
+  <g transform="translate(4 16) scale(0.25)">
+  <defs>
+    <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="0.55" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#ef4444"/>
+    </linearGradient>
+    <linearGradient id="arch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c2410c"/>
+      <stop offset="1" stop-color="#92400e"/>
+    </linearGradient>
+  </defs>
+  <path d="M112 440 V256 a144 144 0 0 1 288 0 v184" fill="none" stroke="url(#arch)" stroke-width="52" stroke-linecap="round"/>
+  <rect x="64" y="452" width="384" height="40" rx="20" fill="url(#arch)"/>
+  <path d="M256 168 C298 242 342 274 342 344 a86 86 0 0 1 -172 0 C170 274 214 242 256 168 Z" fill="url(#flame)"/>
+  <path d="M256 300 C276 330 298 344 298 376 a42 42 0 0 1 -84 0 C214 344 236 330 256 300 Z" fill="#fef3c7"/>
+  </g>
+  <text x="150" y="112" font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif" font-weight="700" font-size="84" letter-spacing="-1" fill="#f5f5f4">Hearth</text>
+</svg>
