@@ -11,11 +11,11 @@
 #   ghcr.io/rshaker2-ops/hearth-machine-learning:main
 # Pin IMMICH_VERSION in .env to a release tag (e.g. v1.1.0) for reproducible upgrades.
 
-name: immich
+name: hearth
 
 services:
-  immich-server:
-    container_name: immich_server
+  hearth-server:
+    container_name: hearth_server
     image: ghcr.io/rshaker2-ops/hearth-server:${IMMICH_VERSION:-main}
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -35,8 +35,14 @@ services:
     healthcheck:
       disable: false
 
-  immich-machine-learning:
-    container_name: immich_machine_learning
+  hearth-machine-learning:
+    container_name: hearth_machine_learning
+    networks:
+      default:
+        # Keep the upstream service hostname resolvable: the machine learning URL
+        # stored in the server's system config references immich-machine-learning.
+        aliases:
+          - immich-machine-learning
     # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-main}-cuda
     image: ghcr.io/rshaker2-ops/hearth-machine-learning:${IMMICH_VERSION:-main}
@@ -52,14 +58,14 @@ services:
       disable: false
 
   redis:
-    container_name: immich_redis
+    container_name: hearth_redis
     image: docker.io/valkey/valkey:9@sha256:3acc0687f2a2e1091fae6450d7842dd658c941338cf0a873ddd9e14b9e4ea4dd
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
 
   database:
-    container_name: immich_postgres
+    container_name: hearth_postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
