@@ -39,6 +39,10 @@ A Docker Compose file for Unraid (and general Docker hosts) is provided in [`doc
 
 The mobile experience uses the official Immich mobile apps from the app stores, pointed at your Hearth server; this project does not distribute mobile applications.
 
+### A note on configuration naming
+
+Internal identifiers — environment variables such as `IMMICH_VERSION`, API routes, and the database schema — intentionally keep upstream Immich's naming. This preserves compatibility with the official Immich mobile apps and upstream documentation, and keeps future upstream updates tractable. Only the user-facing identity is rebranded.
+
 ## Upstream project
 
 Immich's documentation largely applies to Hearth and is an excellent resource: <https://docs.immich.app/>. If you want the original project — with official support, a community, and mobile apps — use [Immich](https://github.com/immich-app/immich) and consider [supporting its development](https://buy.immich.app/).
