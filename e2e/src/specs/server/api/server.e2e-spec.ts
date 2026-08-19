@@ -30,7 +30,7 @@ describe('/server', () => {
       expect(body).toEqual({
         version: expect.any(String),
         versionUrl: expect.any(String),
-        improvedVersion: '1.1.0',
+        improvedVersion: '1.2.0',
         repository: 'rshaker2-ops/hearth',
         repositoryUrl: 'https://github.com/rshaker2-ops/hearth',
         build: '1234567890',

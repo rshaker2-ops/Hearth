@@ -31,7 +31,7 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getPersonActions } from '$lib/services/person.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, timelineSort } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -74,6 +74,7 @@
     visibility: AssetVisibility.Timeline,
     personId: data.person.id,
     ...(!isOwnPerson && { userId: person.ownerId }),
+    ...$timelineSort,
   });
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
@@ -354,6 +355,7 @@
     <Timeline
       enableRouting={true}
       {person}
+      withSortControl
       bind:timelineManager
       {options}
       assetInteraction={assetMultiSelectManager}
