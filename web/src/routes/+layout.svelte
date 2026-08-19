@@ -22,6 +22,7 @@
     CommandPaletteProvider,
     CORE_PAGE_COMMANDS,
     defaultProvider,
+    logoManager,
     MOBILE_APP_COMMANDS,
     modalManager,
     OTHER_SITE_COMMANDS,
@@ -35,6 +36,18 @@
     toastManager,
     TooltipProvider,
   } from '@immich/ui';
+  import hearthIcon from '$lib/assets/hearth/icon.png';
+  import hearthInlineDark from '$lib/assets/hearth/inline-dark.svg';
+  import hearthInlineLight from '$lib/assets/hearth/inline-light.svg';
+  import hearthStackedDark from '$lib/assets/hearth/stacked-dark.svg';
+  import hearthStackedLight from '$lib/assets/hearth/stacked-light.svg';
+
+  logoManager.setLogo({
+    stacked: { light: hearthStackedLight, dark: hearthStackedDark },
+    unstacked: { light: hearthInlineLight, dark: hearthInlineDark },
+    stacked_futo: { light: hearthStackedLight, dark: hearthStackedDark },
+    icon: hearthIcon,
+  });
   import { En } from 'media-chrome/lang/en';
   import { addTranslation } from 'media-chrome/utils/i18n';
   import { onMount, type Snippet } from 'svelte';
@@ -235,7 +248,7 @@
 <VersionAnnouncement />
 
 <svelte:head>
-  <title>{page.data.meta?.title || 'Web'} - Immich</title>
+  <title>{page.data.meta?.title || 'Web'} - Hearth</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
