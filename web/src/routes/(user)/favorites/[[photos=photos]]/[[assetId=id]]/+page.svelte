@@ -18,6 +18,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { timelineSort } from '$lib/stores/preferences.store';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
@@ -31,7 +32,7 @@
   let { data }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { isFavorite: true, withStacked: true };
+  const options = $derived({ isFavorite: true, withStacked: true, ...$timelineSort });
 
   const handleEscape = () => {
     if (!assetMultiSelectManager.selectionActive) {
@@ -52,6 +53,7 @@
   <Timeline
     enableRouting={true}
     withStacked={true}
+    withSortControl
     bind:timelineManager
     {options}
     assetInteraction={assetMultiSelectManager}

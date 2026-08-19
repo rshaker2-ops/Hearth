@@ -8,6 +8,7 @@
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { NavbarGroup, NavbarItem } from '@immich/ui';
   import {
+    mdiDiceMultipleOutline,
     mdiAccount,
     mdiAccountMultiple,
     mdiAccountMultipleOutline,
@@ -91,6 +92,8 @@
       icon={{ icon: mdiUploadOutline, flipped: true }}
     />
   {/if}
+
+  <NavbarItem title={$t('shuffle')} href={Route.shuffle()} icon={mdiDiceMultipleOutline} />
 
   {#if authManager.preferences.folders.enabled && authManager.preferences.folders.sidebarWeb}
     <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />

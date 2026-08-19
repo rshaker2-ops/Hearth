@@ -4,6 +4,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
+  import TimelineSortControl from '$lib/components/timeline/TimelineSortControl.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
@@ -40,6 +41,7 @@
     assetInteraction: AssetMultiSelectManager;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
+    withSortControl?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto;
@@ -72,6 +74,7 @@
     assetInteraction,
     removeAction = null,
     withStacked = false,
+    withSortControl = false,
     showArchiveIcon = false,
     isShared = false,
     album,
@@ -592,6 +595,12 @@
       }
     }}
   />
+{/if}
+
+{#if withSortControl && !assetInteraction.selectionActive}
+  <div class="absolute top-2 z-10" style:inset-inline-end={(usingMobileDevice ? 12 : scrubberWidth + 12) + 'px'}>
+    <TimelineSortControl />
+  </div>
 {/if}
 
 <!-- Right margin MUST be equal to the width of scrubber -->

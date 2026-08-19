@@ -15,6 +15,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { timelineSort } from '$lib/stores/preferences.store';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
@@ -28,7 +29,7 @@
 
   let { data }: Props = $props();
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { visibility: AssetVisibility.Archive };
+  const options = $derived({ visibility: AssetVisibility.Archive, ...$timelineSort });
 
   const handleEscape = () => {
     if (!assetMultiSelectManager.selectionActive) {
@@ -50,6 +51,7 @@
     enableRouting={true}
     bind:timelineManager
     {options}
+    withSortControl
     assetInteraction={assetMultiSelectManager}
     removeAction={AssetAction.UNARCHIVE}
     onEscape={handleEscape}
