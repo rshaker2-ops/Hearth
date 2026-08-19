@@ -36,7 +36,7 @@
     toastManager,
     TooltipProvider,
   } from '@immich/ui';
-  import hearthIcon from '$lib/assets/hearth/icon.svg';
+  import hearthIcon from '$lib/assets/hearth/icon.png';
   import hearthInlineDark from '$lib/assets/hearth/inline-dark.svg';
   import hearthInlineLight from '$lib/assets/hearth/inline-light.svg';
   import hearthStackedDark from '$lib/assets/hearth/stacked-dark.svg';

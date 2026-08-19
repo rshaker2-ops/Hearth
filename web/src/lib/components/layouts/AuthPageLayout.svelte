@@ -1,5 +1,5 @@
 <script lang="ts">
-  import hearthIcon from '$lib/assets/hearth/icon.svg';
+  import hearthLogo from '$lib/assets/hearth/logo.png';
   import { Card, CardBody, CardHeader, Heading, Logo, VStack } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
@@ -16,7 +16,7 @@
   {#if withBackdrop}
     <div class="absolute -z-10 flex size-full place-content-center place-items-center">
       <img
-        src={hearthIcon}
+        src={hearthLogo}
         class="mx-auto mb-2 h-full max-w-(--breakpoint-md) overflow-hidden antialiased"
         alt="Hearth logo"
       />
