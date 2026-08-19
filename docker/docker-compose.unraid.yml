@@ -1,5 +1,7 @@
 #
-# Compose stack for running Hearth (rshaker2-ops/hearth) on an Unraid server.
+# Compose stack for running Hearth (rshaker2-ops/Hearth) on an Unraid server.
+# This file matches the real deployment: media on /photos, external libraries,
+# and the live PG16 database - it is not a generic template.
 #
 # Usage (with the "Docker Compose Manager" plugin from Community Applications):
 #   1. Create a new stack and paste this file as its compose file.
@@ -20,9 +22,14 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding (quicksync for Intel iGPU)
+    environment:
+      # Uploaded media lives under the /photos mount below, NOT the default /data.
+      # This must match the media location recorded in the database - do not change it.
+      IMMICH_MEDIA_LOCATION: /photos
     volumes:
-      # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
-      - ${UPLOAD_LOCATION}:/data
+      - /mnt/user/data/media/photos:/photos
+      - /mnt/user/photos:/libraries
+      - '/mnt/user/nextcloud/Rob Shaker/files/Pics and vids:/mnt/media/RobS'
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -66,21 +73,19 @@ services:
 
   database:
     container_name: hearth_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    # PG16: the database directory below was initialized with Postgres 16 - do not downgrade this image.
+    image: ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvector0.8.0-pgvectors0.3.0
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
-      # Uncomment the DB_STORAGE_TYPE: 'HDD' var if your database isn't stored on SSDs
-      # DB_STORAGE_TYPE: 'HDD'
     volumes:
-      # Do not edit the next line. If you want to change the database storage location on your system, edit the value of DB_DATA_LOCATION in the .env file
-      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+      # IMPORTANT (Unraid): Postgres must NOT live on the FUSE-backed /mnt/user path -
+      # this is a direct cache path, and it holds the live database.
+      - /mnt/cache/appdata/PostgreSQL_Immich:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
-    healthcheck:
-      disable: false
 
 volumes:
   model-cache:
