@@ -6,6 +6,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
+  import TimelineSortControl from '$lib/components/timeline/TimelineSortControl.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -25,7 +26,7 @@
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { lang, locale } from '$lib/stores/preferences.store';
+  import { lang, locale, timelineSort } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
@@ -67,6 +68,18 @@
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived<SearchTerms>(searchQuery ? JSON.parse(searchQuery) : {});
   let searchTermKeys = $derived(getObjectKeys(terms));
+  let isSmartSearch = $derived(('query' in terms || 'queryAssetId' in terms) && smartSearchEnabled);
+
+  // Metadata searches support a sort direction; reload the results when it changes.
+  let lastSortOrder = '';
+  $effect(() => {
+    const order = $timelineSort.order;
+    const changed = lastSortOrder && lastSortOrder !== order;
+    lastSortOrder = order;
+    if (changed && !isSmartSearch) {
+      untrack(() => handlePromiseError(onSearchQueryUpdate()));
+    }
+  });
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
@@ -145,7 +158,9 @@
           ? await searchSmart({
               smartSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, language: $lang },
             })
-          : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
+          : await searchAssets({
+              metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, order: $timelineSort.order },
+            });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
@@ -300,6 +315,12 @@
       {/each}
     </div>
   </section>
+{/if}
+
+{#if searchResultAssets.length > 0 && !isSmartSearch && !assetMultiSelectManager.selectionActive}
+  <div class="mx-4 mt-4 flex justify-end">
+    <TimelineSortControl />
+  </div>
 {/if}
 
 <section

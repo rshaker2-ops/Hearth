@@ -56,7 +56,7 @@ const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
 
 // version of the Hearth fork, independent of the upstream Immich version above
-export const improvedVersion = '1.2.0';
+export const improvedVersion = '1.3.0';
 
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;

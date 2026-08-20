@@ -597,8 +597,11 @@
   />
 {/if}
 
-{#if withSortControl && !assetInteraction.selectionActive}
-  <div class="absolute top-2 z-10" style:inset-inline-end={(usingMobileDevice ? 12 : scrubberWidth + 12) + 'px'}>
+{#if withSortControl}
+  <div
+    class="flex h-12 items-center justify-end pe-3 pt-2"
+    style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  >
     <TimelineSortControl />
   </div>
 {/if}
@@ -606,7 +609,12 @@
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
-  class={['h-full scrollbar-hidden overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={[
+    withSortControl ? 'h-[calc(100%-3rem)]' : 'h-full',
+    'scrollbar-hidden overflow-y-auto outline-none',
+    { 'm-0': isEmpty },
+    { 'ms-0': !isEmpty },
+  ]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
