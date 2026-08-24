@@ -15,37 +15,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios gha_testflight_dev
+### ios release
 
 ```sh
-[bundle exec] fastlane ios gha_testflight_dev
+[bundle exec] fastlane ios release
 ```
 
-iOS Development Build to TestFlight (requires separate bundle ID)
+Build Hearth and upload it to TestFlight
 
-### ios gha_release_prod
+### ios build_only
 
 ```sh
-[bundle exec] fastlane ios gha_release_prod
+[bundle exec] fastlane ios build_only
 ```
 
-iOS Release to TestFlight
-
-### ios release_manual
-
-```sh
-[bundle exec] fastlane ios release_manual
-```
-
-iOS Manual Release
-
-### ios gha_build_only
-
-```sh
-[bundle exec] fastlane ios gha_build_only
-```
-
-iOS Build Only (no TestFlight upload)
+Build only (sanity-check signing without uploading)
 
 ----
 
