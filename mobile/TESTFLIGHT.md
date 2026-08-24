@@ -24,12 +24,45 @@ Personal overrides (a different team/bundle) go in `ios/Signing.local.xcconfig`
 
 ## 0. Prerequisites (once)
 
-- A Mac with Xcode installed (the version the repo's CI uses is a safe pick).
-- Apple Developer Program membership active on team `7G5Q9CULSW`.
-- Repo tooling: [mise](https://mise.jdx.dev) — from `mobile/` run
-  `mise install`, then `mise run checkout` (fetches Flutter deps, runs codegen,
-  `pod install`).
-- Ruby gems for fastlane: `cd mobile/ios && bundle install`.
+macOS ships none of the iOS toolchain by default, and each missing piece fails
+with an error that doesn't name the real cause — the exact messages are in
+[Troubleshooting](#troubleshooting). Get these in place first:
+
+**Full Xcode**, not just the Command Line Tools. Flutter resolves the app's
+bundle identifier by asking `xcodebuild`, so a CLT-only machine cannot build at
+all. Install Xcode from the App Store, then point the toolchain at it:
+
+```bash
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+sudo xcodebuild -license accept
+xcodebuild -runFirstLaunch
+xcodebuild -version     # must print a version, not an error
+```
+
+**Ruby 3.0+** for CocoaPods and fastlane. Apple's system Ruby is 2.6, which
+current gems refuse to install against (`ffi` is usually the first to complain):
+
+```bash
+brew install ruby
+echo 'export PATH="$(brew --prefix ruby)/bin:$PATH"' >> ~/.zprofile
+export PATH="$(brew --prefix ruby)/bin:$PATH"    # this shell, now
+ruby -v                 # must not say 2.6.x
+```
+
+Homebrew's Ruby is keg-only (macOS provides its own), hence the PATH line.
+`mise use -g ruby@3.3` works too and matches CI exactly, but compiles from
+source. Ruby 3.4+ dropped `abbrev` from the default gems — the Gemfile already
+carries it.
+
+**CocoaPods** — `brew install cocoapods`, or skip it and let the Gemfile
+provide it (`mise run checkout` uses whichever it finds).
+
+**Apple Developer Program** membership active on team `7G5Q9CULSW`.
+
+**Repo tooling**: [mise](https://mise.jdx.dev) — from `mobile/` run
+`mise install`, then `mise run checkout` (Flutter deps, codegen, `pod install`).
+
+**Gems for fastlane**: `cd mobile/ios && bundle install`.
 
 ## 1. One-time Apple setup
 
@@ -96,6 +129,10 @@ server-side automation for this fork (CI's signing pipeline is disabled).
 
 | Symptom | Fix |
 |---|---|
+| `mise run checkout` fails with `pod: command not found` | CocoaPods isn't installed. `brew install cocoapods`, or `cd mobile/ios && bundle install` to use the Gemfile's copy, then re-run. |
+| Flutter fails with **"Application not configured for iOS"** | Flutter can't reach `xcodebuild`, so it can't resolve `$(PRODUCT_BUNDLE_IDENTIFIER)` from `Info.plist`. Almost always full Xcode missing, or `xcode-select` still pointing at the Command Line Tools — see Prerequisites. `flutter doctor -v` names it. |
+| `bundle install` fails: *"ffi … requires ruby version >= 3.0 … current version 2.6.10"* | You're on Apple's system Ruby. Install a modern one and put it first on PATH (Prerequisites). |
+| An Xcode build phase exits with **status 127** | A build phase couldn't find a tool. Usually `ios/Flutter/Generated.xcconfig` is missing or stale, which `mise run checkout` regenerates (it runs `flutter build ios --config-only`). |
 | Xcode: "Failed to register bundle identifier" | The bundle ID is taken on another team — pick a variant in `Signing.local.xcconfig`. |
 | "Provisioning profile doesn't include the App Groups capability" | Open each target's Signing & Capabilities tab once with the team selected so Xcode refreshes the App ID; make sure the group shows as `group.com.lordblight.hearth`. |
 | `latest_testflight_build_number` auth errors | Set up the API key from step 1.3, or run once interactively and store the session. |

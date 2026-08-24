@@ -154,11 +154,22 @@ hide = true
 sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugins-dependencies"]
 outputs = ["ios/Pods/Manifest.lock"]
 run = '''
-echo "Running pod install"
 if [ "$(uname)" != "Darwin" ]; then
   exit 0
 fi
-cd ios && pod install
+cd ios
+# Prefer a CocoaPods on PATH (brew or gem); otherwise use the one pinned in the
+# Gemfile. Failing with a hint beats a bare "pod: command not found".
+if command -v pod >/dev/null 2>&1; then
+  echo "Running pod install"
+  pod install
+elif bundle exec pod --version >/dev/null 2>&1; then
+  echo "Running bundle exec pod install"
+  bundle exec pod install
+else
+  echo "error: CocoaPods not found. Install it with 'brew install cocoapods', or run 'cd mobile/ios && bundle install' to use the Gemfile's copy (needs Ruby >= 3.0)." >&2
+  exit 1
+fi
 '''
 
 [tasks."analyze:dart"]
