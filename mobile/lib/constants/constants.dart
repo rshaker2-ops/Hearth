@@ -15,6 +15,12 @@ const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";
+const String kSecuredPortalToken = "secured_portal_token";
+const String kSecuredPortalBaseUrl = "secured_portal_base_url";
+
+// Header that carries the auth portal's per-device token past the reverse
+// proxy in front of the Hearth server (see PortalAuthService).
+const String kPortalTokenHeader = "X-Portal-Token";
 
 // background_downloader task groups
 const String kManualUploadGroup = 'manual_upload_group';

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -188,8 +189,18 @@ class ApiService {
     return urls;
   }
 
+  /// The auth portal's per-device token, restored/updated by
+  /// PortalAuthService. Kept here so the sync header getter below can merge
+  /// it without an async keystore read.
+  static String? portalToken;
+
   static Map<String, String> getRequestHeaders() {
-    return SettingsRepository.instance.appConfig.network.customHeaders;
+    final headers = Map<String, String>.of(SettingsRepository.instance.appConfig.network.customHeaders);
+    final token = portalToken;
+    if (token != null && token.isNotEmpty) {
+      headers[kPortalTokenHeader] = token;
+    }
+    return headers;
   }
 
   ApiClient get apiClient => _apiClient;
