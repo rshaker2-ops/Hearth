@@ -25,6 +25,7 @@ import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/portal_auth.service.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -97,6 +98,36 @@ class LoginForm extends HookConsumerWidget {
       // Guard empty URL
       if (serverUrl.isEmpty) {
         ImmichToast.show(context: context, msg: context.t.login_form_server_empty, toastType: ToastType.error);
+      }
+
+      // Hearth: the server sits behind the auth portal, /api included. Run
+      // the portal sign-in first so the validation below can pass the gate.
+      try {
+        await ref.read(portalAuthServiceProvider).ensurePortalAccess(serverUrl);
+      } on PortalAuthException catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+        ImmichToast.show(context: context, msg: e.message, toastType: ToastType.error, gravity: ToastGravity.TOP);
+        return;
+      } on PlatformException {
+        // The user closed the portal sign-in browser.
+        return;
+      } catch (error, stack) {
+        log.severe('Portal sign-in failed: $error', stack);
+        if (!context.mounted) {
+          return;
+        }
+        ImmichToast.show(
+          context: context,
+          msg: 'Portal sign-in failed — please try again.',
+          toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
+        );
+        return;
+      }
+      if (!context.mounted) {
+        return;
       }
 
       try {

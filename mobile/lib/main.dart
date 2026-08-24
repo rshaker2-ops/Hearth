@@ -33,6 +33,7 @@ import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
+import 'package:immich_mobile/services/portal_auth.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
@@ -65,6 +66,10 @@ void main() async {
 
 Future<void> initApp() async {
   await initializeDateFormatting();
+
+  // Load the auth portal's device token before anything pushes request
+  // headers, so X-Portal-Token survives every header refresh.
+  await PortalAuthService.restore();
 
   if (Platform.isAndroid) {
     try {

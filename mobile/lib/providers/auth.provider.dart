@@ -129,7 +129,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final headerMap = _ref.read(appConfigProvider).network.customHeaders;
+    // Merged headers (custom + portal token) so widgets pass the portal gate.
+    final headerMap = ApiService.getRequestHeaders();
     final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
