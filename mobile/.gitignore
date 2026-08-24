@@ -66,3 +66,6 @@ libisar.so
 
 # Translation file
 lib/generated/
+
+# Generated OpenAPI Dart SDK (mise //:open-api-dart rebuilds it from the spec)
+generated/
