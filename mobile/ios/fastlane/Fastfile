@@ -31,6 +31,36 @@ platform :ios do
     )
   end
 
+  # Writes the version and build number onto EVERY target. App Store Connect
+  # rejects an upload whose extensions don't carry byte-identical
+  # CFBundleVersion / CFBundleShortVersionString values to the parent app
+  # (ITMS-90473), and the extensions generate their Info.plist from these
+  # build settings while Runner/Info.plist reads the same two variables — so
+  # stamping all targets keeps the whole bundle in lockstep by construction.
+  def stamp_all_targets(version:, build_number:)
+    require 'xcodeproj'
+
+    project = Xcodeproj::Project.open("./Runner.xcodeproj")
+    project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings["MARKETING_VERSION"] = version
+        config.build_settings["CURRENT_PROJECT_VERSION"] = build_number.to_s
+      end
+    end
+    project.save
+
+    UI.success("Stamped #{version} (#{build_number}) on: #{project.targets.map(&:name).join(', ')}")
+  end
+
+  # The app target's current build number, for lanes that don't bump it.
+  def current_build_number
+    require 'xcodeproj'
+
+    project = Xcodeproj::Project.open("./Runner.xcodeproj")
+    runner = project.targets.find { |t| t.name == "Runner" }
+    runner.build_configurations.first.build_settings["CURRENT_PROJECT_VERSION"] || "1"
+  end
+
   # The marketing version always comes from pubspec.yaml (single source of
   # truth shared with Android); the build number comes from TestFlight.
   def get_version_from_pubspec
@@ -53,14 +83,13 @@ platform :ios do
       targets: ["Runner", "ShareExtension", "WidgetExtension"]
     )
 
-    increment_version_number(version_number: get_version_from_pubspec)
-    increment_build_number(
+    stamp_all_targets(
+      version: get_version_from_pubspec,
       build_number: latest_testflight_build_number(
         api_key: api_key,
         app_identifier: BUNDLE_ID,
         initial_build_number: 0 # first-ever upload becomes build 1
-      ) + 1,
-      xcodeproj: "./Runner.xcodeproj"
+      ) + 1
     )
 
     gym(
@@ -84,6 +113,10 @@ platform :ios do
 
   desc "Build only (sanity-check signing without uploading)"
   lane :build_only do
+    # Same stamp as release, reusing the current build number so this lane
+    # needs no App Store Connect access.
+    stamp_all_targets(version: get_version_from_pubspec, build_number: current_build_number)
+
     update_code_signing_settings(
       use_automatic_signing: true,
       path: "./Runner.xcodeproj",
