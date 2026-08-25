@@ -12,7 +12,8 @@ phone, using what's already configured in this repo.
 | Bundle ID (release) | `com.lordblight.hearth` (+ `.ShareExtension`, `.Widget`) | `ios/Signing.xcconfig` |
 | Bundle ID (debug/profile) | `com.lordblight.hearth.dev.*` | `ios/Signing.xcconfig` |
 | App group | `group.com.lordblight.hearth` | `ios/Signing.xcconfig` |
-| App name | Hearth (`PRODUCT_NAME`, `CFBundleName`, Android label) | Xcode project / Info.plist |
+| App name (on device) | Hearth (`PRODUCT_NAME`, `CFBundleName`, Android label) | Xcode project / Info.plist |
+| App name (App Store Connect) | **Hearth Photos** — plain "Hearth" is taken | App Store Connect only; nothing in the repo |
 | App icon + splash | Hearth artwork, all sizes generated | `assets/hearth-*` via `flutter_launcher_icons` / `flutter_native_splash` |
 | Marketing version | `version:` in `pubspec.yaml` | fastlane reads it on every release |
 | Build number | last TestFlight build + 1 | fastlane, automatic |
@@ -73,9 +74,13 @@ provide it (`mise run checkout` uses whichever it finds).
    `group.com.lordblight.hearth` app group, and the WiFi-info capability on the
    team. (Equivalently: `bundle exec fastlane build_only` from `mobile/ios`.)
 2. **Create the app record.** In [App Store Connect](https://appstoreconnect.apple.com)
-   → My Apps → **+** → New App: platform iOS, name **Hearth**, bundle ID
-   `com.lordblight.hearth`, any SKU (e.g. `hearth-ios`). The name only shows in
-   TestFlight, so it doesn't need to be globally clever.
+   → My Apps → **+** → New App: platform iOS, name **Hearth Photos**, bundle ID
+   `com.lordblight.hearth`, any SKU (e.g. `hearth-ios`). App Store names must be
+   globally unique and plain "Hearth" is already taken several times over, hence
+   the suffix. This name is independent of everything in the repo — the home
+   screen still says **Hearth** — and with TestFlight-only distribution it shows
+   up only in the TestFlight app and your ASC dashboard. If ASC ever refuses it,
+   "Hearth Album" and "Lordblight Hearth" were also clear.
 3. **(Recommended) API key** so uploads never prompt for 2FA: App Store Connect
    → Users and Access → Integrations → App Store Connect API → generate a key
    with **App Manager** role. Save the `.p8` as
@@ -99,7 +104,7 @@ archives with automatic signing, and uploads. Processing on Apple's side takes
 
 ## 3. Invite the family
 
-In App Store Connect → Hearth → TestFlight:
+In App Store Connect → Hearth Photos → TestFlight:
 
 1. Create an **external group** (e.g. "Family") and enable the **public link**,
    or invite each person by email.
